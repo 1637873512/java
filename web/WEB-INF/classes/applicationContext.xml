@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+    http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+    http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+    <context:component-scan base-package="com.qhit.service" />
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <!--引入数据库连接文件-->
+        <property name="location" value="classpath:db.properties"></property>
+    </bean>
+    <!--配置数据库连接池（数据源）：c3p0（推荐使用）-->
+    <bean id="myDateSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${mysql.driver}"></property>
+        <property name="jdbcUrl" value="${mysql.url}"></property>
+        <property name="user" value="${mysql.username}"></property>
+        <property name="password" value="${mysql.pwd}"></property>
+    </bean>
+    <!--创建sqlsession对象-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--sqlsessionfactory需要mybatis配置文件-->
+        <property name="dataSource" ref="myDateSource"></property>
+        <!--给实体类起别名-->
+        <property name="typeAliasesPackage" value="com.qhit.entity"></property>
+        <!--引入映射文件-->
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:com/qhit/dao/*.xml</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <!--创建接口mapper代理对象-->
+    <bean id="easyBuyUserDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        <!--注入sqlsessionfactory-->
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+        <!--注入接口路径-->
+        <property name="mapperInterface" value="com.qhit.dao.EasyBuyUserDao"></property>
+    </bean>
+    <!--创建service对象-->
+    <!--<bean id="easyBuyUserService" class="com.qhit.service.Impl.EasyBuyUserServiceImpl" autowire="byType"></bean>-->
+
+
+    <!--<bean id="easyBuyNewsDao" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>-->
+        <!--<property name="mapperInterface" value="com.qhit.dao.EasyBuyNewsDao"></property>-->
+    <!--</bean>-->
+
+    <!--<bean id="easyBuyNewsService" class="com.qhit.service.Impl.EasyBuyNewsServiceImpl" autowire="byType"></bean>-->
+
+
+    <!--<bean id="easyBuyProductDao" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>-->
+        <!--<property name="mapperInterface" value="com.qhit.dao.EasyBuyProductDao"></property>-->
+    <!--</bean>-->
+
+    <!--<bean id="easyBuyProductService" class="com.qhit.service.Impl.EasyBuyProductServiceImpl" autowire="byType"></bean>-->
+
+
+    <!--<bean id="EasyBuyProductCategoryDao" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>-->
+        <!--<property name="mapperInterface" value="com.qhit.dao.EasyBuyProductCategoryDao"></property>-->
+    <!--</bean>-->
+
+    <!--<bean id="EasyBuyProductCategoryService" class="com.qhit.service.Impl.EasyBuyProductCategoryServiceImpl" autowire="byType"></bean>-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+       <property name="basePackage" value="com.qhit.dao"></property>
+    </bean>
+    <!-- 配置面向切面编程 -->
+    <!-- 定义事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="myDateSource"></property>
+    </bean>
+    <tx:annotation-driven />
+    <!-- 事务增强策略 -->
+    <tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method name="get*" propagation="SUPPORTS"  />
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="del*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
+    <!-- 定义切面 -->
+    <aop:config>
+        <aop:pointcut id="serviceMethod"
+                      expression="execution(* com.qhit.service.*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod" />
+    </aop:config>
+</beans>

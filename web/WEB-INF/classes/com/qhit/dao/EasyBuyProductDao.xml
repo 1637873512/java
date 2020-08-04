@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间，要和Mapper接口一致 -->
+<mapper namespace="com.qhit.dao.EasyBuyProductDao">
+    <!-- id要和mapper接口中的方法名一致，结果类型为pojo类 -->
+    <resultMap id="resultMap" type="EasyBuyProduct">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="description" property="description"></result>
+        <result column="price" property="price"></result>
+        <result column="stock" property="stock"></result>
+        <result column="fileName" property="fileName"></result>
+        <result column="isDelete" property="isDelete"></result>
+    </resultMap>
+    <resultMap id="FullResultMap" type="EasyBuyProduct" extends="resultMap">
+        <association property="pc1" javaType="EasyBuyProductCategory">
+            <id column="id" property="id"></id>
+            <result column="name1" property="name"></result>
+            <result column="parentId" property="parentId"></result>
+            <result column="type" property="type"></result>
+            <result column="iconClass" property="iconClass"></result>
+        </association>
+        <association property="pc2" javaType="EasyBuyProductCategory">
+            <id column="id" property="id"></id>
+            <result column="name2" property="name"></result>
+            <result column="parentId" property="parentId"></result>
+            <result column="type" property="type"></result>
+            <result column="iconClass" property="iconClass"></result>
+        </association>
+        <association property="pc3" javaType="EasyBuyProductCategory">
+            <id column="id" property="id"></id>
+            <result column="name3" property="name"></result>
+            <result column="parentId" property="parentId"></result>
+            <result column="type" property="type"></result>
+            <result column="iconClass" property="iconClass"></result>
+        </association>
+    </resultMap>
+    <select id="getPage" resultMap="FullResultMap">
+        select p.id,p.name,p.price,c1.name name1 ,c2.name name2 ,c3.name name3 ,
+        p.fileName,p.isDelete from easybuy_product p
+        LEFT JOIN easybuy_product_category c1 ON p.categoryLevel1Id = c1.id
+        LEFT JOIN easybuy_product_category c2 ON p.categoryLevel2Id = c2.id
+        LEFT JOIN easybuy_product_category c3 ON p.categoryLevel3Id = c3.id
+        <where>
+            <if test="name!=null and name.trim()!=''">
+                 p.name like "%" #{name} "%"
+            </if>
+        </where>
+        limit #{index},#{pageSize}
+    </select>
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(1) from easybuy_product
+        <where>
+            <if test="name!=null and name.trim()!=''">
+                name like "%" #{name}"%"
+            </if>
+        </where>
+    </select>
+    <update id="del">
+        update easybuy_product set isDelete = 1 <where>id = #{id}</where>
+    </update>
+    <select id="getOne" resultMap="FullResultMap">
+        select * from easybuy_product <where>id = #{id}</where>
+    </select>
+    <update id="updateEasyBuyProduct">
+        update easybuy_product
+        <set>
+            <if test="name!=null and name!=''">name = #{name},</if>
+            <if test="price!=null and price!=''">price = #{price},</if>
+            <if test="stock!=null and stock!=''">stock = #{stock},</if>
+            <if test="description!=null and description!=''">description = #{description},</if>
+            <if test="pc1!=null">categoryLevel1Id = #{pc1.id},</if>
+            <if test="pc2!=null">categoryLevel2Id = #{pc2.id},</if>
+            <if test="pc3!=null">categoryLevel3Id = #{pc3.id}, </if>
+            <if test="fileName!=null and fileName!=''">fileName = #{fileName}</if>
+        </set>
+        <where>id = #{id}</where>
+    </update>
+    <insert id="addEasyBuyProduct">
+        insert into easybuy_product (name,description,price,stock,categoryLevel1Id,categoryLevel2Id,categoryLevel3Id,fileName,isDelete) values (#{name},#{description},#{price},#{stock},#{pc1.id},#{pc2.id},#{pc3.id},#{fileName},#{isDelete})
+    </insert>
+</mapper>

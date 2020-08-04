@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间，要和Mapper接口一致 -->
+<mapper namespace="com.qhit.dao.EasyBuyUserDao">
+    <!-- id要和mapper接口中的方法名一致，结果类型为pojo类 -->
+    <resultMap id="resultMap" type="EasyBuyUser">
+        <id column="id" property="id"/>
+        <result column="loginName" property="loginName"/>
+        <result column="userName" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="sex" property="sex"/>
+        <result column="identityCode" property="identityCode"/>
+        <result column="email" property="email"/>
+        <result column="mobile" property="mobile"/>
+        <result column="type" property="type"/>
+    </resultMap>
+    <!--登录-->
+    <select id="login" resultMap="resultMap" >
+        select * from easybuy_user
+         <where>loginName = #{loginName} and password = #{password}</where>
+    </select>
+    <!--分页-->
+    <select id="getPage" resultMap="resultMap">
+        select * from easybuy_user
+        <where>
+            <if test="name!=null and name.trim()!=''">
+                 loginName like "%" #{name} "%"
+            </if>
+        </where>
+        limit #{index},#{pageSize}
+    </select>
+    <!--查询总条数-->
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(1) from easybuy_user
+        <where>
+            <if test="name!=null and name.trim()!=''">
+                 loginName like "%" #{name}"%"
+            </if>
+        </where>
+    </select>
+    <!--删除-->
+    <delete id="del">
+        delete from easybuy_user <where>id = #{id}</where>
+    </delete>
+    <!--添加管理员-->
+    <insert id="add">
+        insert into easybuy_user (loginName,userName,password,sex,identityCode,email,mobile,type) value (#{loginName},#{userName},#{password},#{sex},#{identityCode},#{email},#{mobile},#{type})
+    </insert>
+    <!--根据id查找-->
+    <select id="getOne" resultMap="resultMap">
+        select * from easybuy_user <where>id = #{id}</where>
+    </select>
+    <!--修改-->
+    <update id="updateEasyBuyUser">
+        update easybuy_user
+        <set>
+            <if test="sex!=null and sex!=''">sex = #{sex},</if>
+            <if test="identityCode!=null and identityCode!=''">identityCode = #{identityCode},</if>
+            <if test="email!=null and email!=''">email = #{email},</if>
+            <if test="mobile!=null and mobile!=''">mobile = #{mobile},</if>
+            <if test="userName!=null and userName!=''">userName = #{userName}</if>
+        </set>
+        <where>id = #{id}</where>
+    </update>
+    <!--修改密码-->
+    <update id="changePasswprd">
+        update easybuy_user
+        <set>
+            <if test="password!=null and password!=''">password = #{password}</if>
+        </set>
+        <where>loginName = #{loginName}</where>
+    </update>
+</mapper>

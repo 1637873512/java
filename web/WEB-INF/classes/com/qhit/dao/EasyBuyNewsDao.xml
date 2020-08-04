@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间，要和Mapper接口一致 -->
+<mapper namespace="com.qhit.dao.EasyBuyNewsDao">
+    <!-- id要和mapper接口中的方法名一致，结果类型为pojo类 -->
+    <resultMap id="resultMap" type="EasyBuyNews">
+        <id column="id" property="id"></id>
+        <result column="title" property="title"></result>
+        <result column="content" property="content"></result>
+        <result column="createTime" property="createTime"></result>
+    </resultMap>
+    <!--分页-->
+    <select id="getPage" resultMap="resultMap">
+        select * from easybuy_news
+        <where>
+            <if test="name!=null and name.trim()!=''">
+                 title like "%" #{name} "%"
+            </if>
+        </where>
+        limit #{index},#{pageSize}
+    </select>
+    <!--查询总条数-->
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(1) from easybuy_news
+        <where>
+            <if test="name!=null and name.trim()!=''">
+                 title like "%" #{name}"%"
+            </if>
+        </where>
+    </select>
+    <!--添加资讯-->
+    <insert id="add">
+        insert into easybuy_news (title,content,createTime) value (#{title},#{content},#{createTime})
+    </insert>
+    <!--删除-->
+    <delete id="del">
+        delete from easybuy_news <where>id = #{id}</where>
+    </delete>
+    <!--根据id查找-->
+    <select id="getOne" resultMap="resultMap">
+        select * from easybuy_news <where>id = #{id}</where>
+    </select>
+    <!--修改-->
+    <update id="updateEasyBuyNews">
+        update easybuy_news
+        <set>
+            <if test="title!=null and title!=''">title = #{title},</if>
+        </set>
+        <where>id = #{id}</where>
+    </update>
+</mapper>
